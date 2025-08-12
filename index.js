@@ -4,15 +4,19 @@ import { C } from "./constants.js";
 import { CANVAS } from "./constants.js";
 import { keys } from "./keys.js";
 import { setupInput } from "./inputs.js";
+
 CANVAS.width = window.innerWidth;
 CANVAS.height = window.innerHeight;
+
 const BG = new Image();
 BG.src = "./images/BG.jpg";
+
 // create a new player
 const player = new Player({
   x: 100,
   y: 100,
 });
+
 const platforms = [
   new Platform({ x: 150, y: 520 }),
   new Platform({ x: 600, y: 430 }),
@@ -22,25 +26,49 @@ const platforms = [
   new Platform({ x: 1000, y: 100 }),
   new Platform({ x: 150, y: 120 }),
 ];
+
 // inputs for player movement
 setupInput(keys);
+
 // main function to animate the game
 const animate = () => {
   window.requestAnimationFrame(animate);
 
   C.drawImage(BG, 0, 0, CANVAS.width, CANVAS.height);
   player.update();
-  player.velocity.x = 0;
 
+  player.velocity.x = 0; // reset horizontal velocity
+
+  // Movement input
   if (keys.d.pressed) player.velocity.x = 3;
   if (keys.a.pressed) player.velocity.x = -3;
   if (keys.w.pressed) player.velocity.y = -5;
 
+  // Boundaries
   const playerTop = player.position.y;
   const playerBottom = player.position.y + player.height;
   const playerLeft = player.position.x;
   const playerRight = player.position.x + player.width;
 
+  // Stop at left edge
+  if (playerLeft <= 0 && player.velocity.x < 0) {
+    player.velocity.x = 0;
+    player.position.x = 0;
+  }
+
+  // Stop at right edge
+  if (playerRight >= CANVAS.width && player.velocity.x > 0) {
+    player.velocity.x = 0;
+    player.position.x = CANVAS.width - player.width;
+  }
+
+  // Stop at top edge
+  if (playerTop <= 0 && player.velocity.y < 0) {
+    player.velocity.y = 0;
+    player.position.y = 0;
+  }
+
+  // Draw platforms & collisions
   platforms.forEach((p) => {
     p.draw();
 
